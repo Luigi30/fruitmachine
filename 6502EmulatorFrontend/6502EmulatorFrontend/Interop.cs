@@ -42,35 +42,35 @@ namespace _6502EmulatorFrontend
             public byte DSPCR;
         };
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern bool loadBinary([MarshalAs(UnmanagedType.LPStr)] string path, ushort address);
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern ushort getProgramCounter();
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern InteropProcessorStatus getProcessorStatus();
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void resetProcessor();
 
         //Execution
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void doSingleStep();
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern MC6821Status getMC6821Status();
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern byte getOutputBuffer();
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr getMemoryRange(ushort baseAddr, ushort length);
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void resetCycleCounter();
 
-        [DllImport("C:/Users/Luigi/Documents/Visual Studio 2015/Projects/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("C:/apple/fruitmachine/M6502EmulatorDll/Debug/M6502EmulatorDll.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern void putKeyInBuffer(byte key);
     }
 }

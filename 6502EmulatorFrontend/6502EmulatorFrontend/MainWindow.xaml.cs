@@ -29,6 +29,9 @@ namespace _6502EmulatorFrontend
         Thread M6502WorkerThread;
         MainWindowViewModel vm = new MainWindowViewModel();
         byte[] videoRom = File.ReadAllBytes("C:/apple/apple1.vid");
+        string monitorRomPath;
+        string basicRomPath;
+        SettingsWindow settingsWindow;
 
         public MainWindow()
         {
@@ -55,21 +58,24 @@ namespace _6502EmulatorFrontend
             vm.Processor.ExecutionStopped += new M6502.ExecutionStoppedEventHandler(onExecutionStopped);
             TextCompositionManager.AddTextInputHandler(this, new TextCompositionEventHandler(OnTextComposition));
 
+            //Set up settings window
+            settingsWindow = new SettingsWindow();
+            settingsWindow.RomPathsSaved += new SettingsWindow.RomPathsSavedEventHandler(OnRomPathsSaved);
+            settingsWindow.swvm.BasicRomPath = @"C:\apple\apple1basic.bin";
+            settingsWindow.swvm.MonitorRomPath = @"C:\apple\apple1.rom";
+            basicRomPath = @"C:\apple\apple1basic.bin";
+            monitorRomPath = @"C:\apple\apple1.rom";
+
             //Set up window
             InitializeComponent();
             binaryLoadedStatus.SetBinding(ContentProperty, new Binding("LoadSuccess"));
             DataContext = vm;
         }
 
-        private void OnTextComposition(object sender, TextCompositionEventArgs e)
-        {
-            Interop.putKeyInBuffer((byte)e.Text.ToUpper().ToCharArray()[0]);
-        }
-
         private void btnLoadBinary_Click(object sender, RoutedEventArgs e)
         {
-            Interop.loadBinary("C:/apple/apple1.rom", 0xFF00);
-            Interop.loadBinary("C:/apple/apple1basic.bin", 0xE000);
+            Interop.loadBinary(monitorRomPath, 0xFF00);
+            Interop.loadBinary(basicRomPath, 0xE000);
             decodeGraphics();
 
             Interop.resetProcessor();
@@ -92,16 +98,6 @@ namespace _6502EmulatorFrontend
             btnRun.IsEnabled = true;
             btnSingleStep.IsEnabled = true;
 
-        }
-
-        private void AfterProcessorStepCompleted(M6502 sender, EventArgs e)
-        {
-            UpdateDisassemblySelection(sender.ProgramCounter);
-        }
-
-        private void btnSingleStep_Click(object sender, RoutedEventArgs e)
-        {
-            vm.Processor.DoProcessorStep(null, null);
         }
 
         private void decodeGraphics()
@@ -134,35 +130,7 @@ namespace _6502EmulatorFrontend
             BindingOperations.SetBinding(lbDisassembly, ListBox.ItemsSourceProperty, new Binding("DisassembledOpcodes"));
         }
 
-        private void onExecutionStopped(object sender, EventArgs e)
-        {
-            Dispatcher.Invoke(new Action(() => { vm.DisassembledOpcodes.Clear(); }));
-
-            ushort length = 0xFFFE;
-            IntPtr memoryValuesPtr = Interop.getMemoryRange(0x0000, length);
-            byte[] result = new byte[length + 1];
-            Marshal.Copy(memoryValuesPtr, result, 0, length);
-
-            Disassembly disassembly = new Disassembly(result);
-            disassembly.Begin((ushort)(vm.Processor.ProgramCounter - 0x100));
-
-            while (disassembly.NextInstructionAddress < (ushort)vm.Processor.ProgramCounter + 0x100)
-            {
-                Dispatcher.Invoke(new Action(() =>
-                {
-                    vm.DisassembledOpcodes.Add(disassembly.ToDisassembledOpcode());
-                }));
-                disassembly.Next();
-            }
-
-            Dispatcher.Invoke(new Action(() =>
-            {
-                UpdateDisassemblySelection(vm.Processor.ProgramCounter);
-            }));
-
-            lbDisassembly.Dispatcher.Invoke(new Action(() => { enableReadoutControls(); }));
-            lbDisassembly.Dispatcher.Invoke(new Action(() => { tbDebugConsole.Text += "Breakpoint hit.\r\n"; }));
-        }
+        
 
         private void UpdateDisassemblySelection(ushort address)
         {
@@ -223,6 +191,11 @@ namespace _6502EmulatorFrontend
                 //TODO: bpdisable, bpenable
                 tbDebugEntry.Clear();
             }
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            settingsWindow.ShowDialog();
         }
     }
 }

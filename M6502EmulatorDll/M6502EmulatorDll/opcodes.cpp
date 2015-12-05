@@ -25,11 +25,16 @@ unsigned char hex2bcd(unsigned char x)
 	If there is no parameter on the function, it's either implied or accumulator.
 	Assume that PC value is correct coming in.
 
-	The exception is when branching because we don't know if we were successful until now
-	so we need to add +1 to PC on a successful branch and another +1 if the branch
-	goes to a different page. */
+	When branching because we don't know if we were successful until now
+	so we need to add +1 to cycles on a successful branch and another +1 if the branch
+	goes to a different page.
+	
+	crossedPageBoundary tells us if we need to increase cycle count by 1 if we crossed the page boundary
+	CPU::lastInstructionCrossedPageBoundary keeps track of if we did or not
+	if both are true, increase cycle count by 1.
+	*/
 
-void CPU::op_adc(WideAddress address) {
+void CPU::op_adc(WideAddress address, bool crossedPageBoundary) {
 	/*
 	Logic:
 	  t = A + M + P.C
@@ -43,6 +48,10 @@ void CPU::op_adc(WideAddress address) {
 		P.C = (t>255) ? 1:0
 	  A = t & 0xFF      
 	*/
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
 
 	if (accumulator == 0x7f) {
 		int x = 0;
@@ -64,7 +73,7 @@ void CPU::op_adc(WideAddress address) {
 
 };
 
-void CPU::op_adc(uint8_t immediate) {
+void CPU::op_adc(uint8_t immediate, bool crossedPageBoundary) {
 	/*
 	Logic:
 		t = A + M + P.C
@@ -78,6 +87,10 @@ void CPU::op_adc(uint8_t immediate) {
 		P.C = (t>255) ? 1:0
 		A = t & 0xFF
 	*/
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
 
 	if (accumulator == 0x7f) {
 		int x = 0;
@@ -108,23 +121,33 @@ void CPU::op_adc(uint8_t immediate) {
 	accumulator = (t & 0xFF);
 };
 
-void CPU::op_and(WideAddress address) {
+void CPU::op_and(WideAddress address, bool crossedPageBoundary) {
 	/*
 	Logic:
 		A = A & M
 		P.N = A.7
 		P.Z = (A==0) ? 1:0 */
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	accumulator = (accumulator & fetch_memory_byte(address, false));
 	FLAG_SIGN = (accumulator & 0x80) == 0x80;
 	FLAG_ZERO = (accumulator == 0);
 }
 
-void CPU::op_and(uint8_t immediate) {
+void CPU::op_and(uint8_t immediate, bool crossedPageBoundary) {
 	/*
 	Logic:
 	A = A & M
 	P.N = A.7
 	P.Z = (A==0) ? 1:0 */
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	accumulator = (accumulator & immediate);
 	FLAG_SIGN = (accumulator & 0x80) == 0x80;
 	FLAG_ZERO = (accumulator == 0);
@@ -162,9 +185,9 @@ void CPU::op_bcc(int8_t relative) {
 	if (!FLAG_CARRY) {
 		//+1 cycle for branching, +2 if branching to a different page
 		if ((program_counter & 0x00FF) + relative > 0x100) {
-			EmulatorState::Instance()->processor.cycles++;
+			cycles++;
 		}
-		EmulatorState::Instance()->processor.cycles++;
+		cycles++;
 		program_counter += relative;
 	}
 }
@@ -173,9 +196,9 @@ void CPU::op_bcs(int8_t relative) {
 	if (FLAG_CARRY) {
 		//+1 cycle for branching, +2 if branching to a different page
 		if ((program_counter & 0x00FF) + relative > 0x100) {
-			EmulatorState::Instance()->processor.cycles++;
+			cycles++;
 		}
-		EmulatorState::Instance()->processor.cycles++;
+		cycles++;
 		program_counter += relative;
 	}
 }
@@ -184,9 +207,9 @@ void CPU::op_beq(int8_t relative) {
 	if (FLAG_ZERO) {
 		//+1 cycle for branching, +2 if branching to a different page
 		if ((program_counter & 0x00FF) + relative > 0x100) {
-			EmulatorState::Instance()->processor.cycles++;
+			cycles++;
 		}
-		EmulatorState::Instance()->processor.cycles++;
+		cycles++;
 		program_counter += relative;
 	}
 }
@@ -210,16 +233,16 @@ void CPU::op_bmi(int8_t relative) {
 	if (PN) {
 		//+1 cycle for branching, +2 if branching to a different page
 		if ((program_counter & 0x00FF) + relative > 0x100) {
-			EmulatorState::Instance()->processor.cycles++;
+			cycles++;
 		}
-		EmulatorState::Instance()->processor.cycles++;
+		cycles++;
 		program_counter += relative;
 	}
 }
 
 void CPU::op_bne(int8_t relative) {
 	if (!PZ) {
-		EmulatorState::Instance()->processor.cycles++;
+		cycles++;
 		program_counter += relative;
 		if (relative == (int8_t)0xFE) {
 			std::exit(4);
@@ -231,9 +254,9 @@ void CPU::op_bpl(int8_t relative) {
 	if (!PN) {
 		//+1 cycle for branching, +2 if branching to a different page
 		if ((program_counter & 0x00FF) + relative > 0x100) {
-			EmulatorState::Instance()->processor.cycles++;
+			cycles++;
 		}
-		EmulatorState::Instance()->processor.cycles++;
+		cycles++;
 		program_counter += relative;
 	}
 }
@@ -253,9 +276,9 @@ void CPU::op_bvc(int8_t relative) {
 	if (!PV) {
 		//+1 cycle for branching, +2 if branching to a different page
 		if ((program_counter & 0x00FF) + relative > 0x100) {
-			EmulatorState::Instance()->processor.cycles++;
+			cycles++;
 		}
-		EmulatorState::Instance()->processor.cycles++;
+		cycles++;
 		program_counter += relative;
 	}
 }
@@ -264,9 +287,9 @@ void CPU::op_bvs(int8_t relative) {
 	if (PV) {
 		//+1 cycle for branching, +2 if branching to a different page
 		if ((program_counter & 0x00FF) + relative > 0x100) {
-			EmulatorState::Instance()->processor.cycles++;
+			cycles++;
 		}
-		EmulatorState::Instance()->processor.cycles++;
+		cycles++;
 		program_counter += relative;
 	}
 }
@@ -287,7 +310,7 @@ void CPU::op_clv() {
 	PV = false;
 }
 
-void CPU::op_cmp(uint8_t immediate) { //immediate
+void CPU::op_cmp(uint8_t immediate, bool crossedPageBoundary) { //immediate
 	/*
 	Logic:
 		t = A - M
@@ -296,6 +319,10 @@ void CPU::op_cmp(uint8_t immediate) { //immediate
 		P.Z = (t==0) ? 1:0
 	*/
 
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	uint8_t t = accumulator - immediate;
 	PN = (t & 0x80) == 0x80;
 	PC = (accumulator >= immediate);
@@ -303,7 +330,7 @@ void CPU::op_cmp(uint8_t immediate) { //immediate
 
 }
 
-void CPU::op_cmp(WideAddress address) {
+void CPU::op_cmp(WideAddress address, bool crossedPageBoundary) {
 	/*
 	Logic:
 	t = A - M
@@ -311,6 +338,10 @@ void CPU::op_cmp(WideAddress address) {
 	P.C = (A>=M) ? 1:0
 	P.Z = (t==0) ? 1:0
 	*/
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
 
 	uint8_t t = accumulator - fetch_memory_byte(address, false);
 	PN = (t & 0x80) == 0x80;
@@ -372,13 +403,23 @@ void CPU::op_dey() {
 	PN = (index_y & 0x80) == 0x80;
 }
 
-void CPU::op_eor(uint8_t immediate) {
+void CPU::op_eor(uint8_t immediate, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	accumulator = accumulator ^ immediate;
 	PN = (accumulator & 0x80) == 0x80;
 	PZ = (accumulator == 0);
 }
 
-void CPU::op_eor(WideAddress address) {
+void CPU::op_eor(WideAddress address, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	accumulator = accumulator ^ fetch_memory_byte(address, false);
 	PN = (accumulator & 0x80) == 0x80;
 	PZ = (accumulator == 0);
@@ -430,37 +471,67 @@ void CPU::op_jsr(WideAddress address) {
 	program_counter = address;
 }
 
-void CPU::op_lda(uint8_t immediate) {
+void CPU::op_lda(uint8_t immediate, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	accumulator = immediate;
 	PN = (accumulator & 0x80) == 0x80;
 	PZ = (accumulator == 0);
 }
 
-void CPU::op_lda(WideAddress address) {
+void CPU::op_lda(WideAddress address, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	accumulator = fetch_memory_byte(address, false);
 	PN = (accumulator & 0x80) == 0x80;
 	PZ = (accumulator == 0);
 }
 
-void CPU::op_ldx(uint8_t immediate) {
+void CPU::op_ldx(uint8_t immediate, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	index_x = immediate;
 	PN = (index_x & 0x80) == 0x80;
 	PZ = (index_x == 0);
 }
 
-void CPU::op_ldx(WideAddress address) {
+void CPU::op_ldx(WideAddress address, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	index_x = fetch_memory_byte(address, false);
 	PN = (index_x & 0x80) == 0x80;
 	PZ = (index_x == 0);
 }
 
-void CPU::op_ldy(uint8_t immediate) {
+void CPU::op_ldy(uint8_t immediate, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	index_y = immediate;
 	PN = (index_y & 0x80) == 0x80;
 	PZ = (index_y == 0);
 }
 
-void CPU::op_ldy(WideAddress address) {
+void CPU::op_ldy(WideAddress address, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	index_y = fetch_memory_byte(address, false);
 	PN = (index_y & 0x80) == 0x80;
 	PZ = (index_y == 0);
@@ -498,13 +569,23 @@ void CPU::op_nop() {
 	//NOP
 }
 
-void CPU::op_ora(uint8_t immediate) {
+void CPU::op_ora(uint8_t immediate, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	accumulator = accumulator | immediate;
 	PN = (accumulator & 0x80) == 0x80;
 	PZ = (accumulator == 0);
 }
 
-void CPU::op_ora(WideAddress address) {
+void CPU::op_ora(WideAddress address, bool crossedPageBoundary) {
+
+	if (crossedPageBoundary && lastInstructionCrossedPageBoundary) {
+		cycles++;
+	}
+
 	accumulator = accumulator | fetch_memory_byte(address, false);
 	PN = (accumulator & 0x80) == 0x80;
 	PZ = (accumulator == 0);
@@ -613,7 +694,7 @@ void CPU::op_rts() {
 	program_counter = addr.add(1, false);
 }
 
-void CPU::op_sbc(uint8_t immediate) {
+void CPU::op_sbc(uint8_t immediate, bool crossedPageBoundary) {
 	/*
 	Logic:
 	  IF (P.D)
@@ -629,7 +710,7 @@ void CPU::op_sbc(uint8_t immediate) {
   */
 	//TODO: decimal
 
-	op_adc(~immediate);
+	op_adc(~immediate, crossedPageBoundary);
 
 	/*
 	int8_t t;
@@ -649,8 +730,8 @@ void CPU::op_sbc(uint8_t immediate) {
 	*/
 }
 
-void CPU::op_sbc(WideAddress address) {
-	op_adc(~fetch_memory_byte(address, false));
+void CPU::op_sbc(WideAddress address, bool crossedPageBoundary) {
+	op_adc(~fetch_memory_byte(address, false), crossedPageBoundary);
 
 	/*
 	int8_t t;

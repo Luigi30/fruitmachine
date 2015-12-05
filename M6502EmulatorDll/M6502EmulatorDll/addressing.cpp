@@ -4,6 +4,7 @@
 #include <iostream>
 
 uint8_t CPU::fetch_operand(ADDRESSING_MODE mode) {
+	lastInstructionCrossedPageBoundary = false;
 
 	switch (mode) {
 	case ADDRESSING_IMMEDIATE:
@@ -24,6 +25,7 @@ uint8_t CPU::fetch_operand(ADDRESSING_MODE mode) {
 	case ADDRESSING_ZEROPAGE_X:
 	{
 		uint8_t address = fetch_operand(ADDRESSING_IMMEDIATE);
+		lastInstructionCrossedPageBoundary = (address + index_x < address);
 		uint8_t operand = fetch_zero_page_byte(address + index_x);
 		last_operand = address;
 		return operand;
@@ -32,6 +34,7 @@ uint8_t CPU::fetch_operand(ADDRESSING_MODE mode) {
 	case ADDRESSING_ZEROPAGE_Y:
 	{
 		uint8_t address = fetch_operand(ADDRESSING_IMMEDIATE);
+		lastInstructionCrossedPageBoundary = (address + index_y < address);
 		uint8_t operand = fetch_zero_page_byte(address + index_y);
 		last_operand = address;
 		return operand;
@@ -52,6 +55,7 @@ uint8_t CPU::fetch_operand(ADDRESSING_MODE mode) {
 		uint8_t addrLow = fetch_memory_byte(program_counter);
 		uint8_t addrHigh = fetch_memory_byte(program_counter);
 		WideAddress address = { addrHigh, addrLow };
+		lastInstructionCrossedPageBoundary = (addrLow + index_x < addrLow);
 		uint8_t operand = fetch_memory_byte(address.add(index_x, false), false);
 		last_operand = address;
 		return operand;
@@ -62,6 +66,7 @@ uint8_t CPU::fetch_operand(ADDRESSING_MODE mode) {
 		uint8_t addrLow = fetch_memory_byte(program_counter);
 		uint8_t addrHigh = fetch_memory_byte(program_counter);
 		WideAddress address = { addrHigh, addrLow };
+		lastInstructionCrossedPageBoundary = (addrLow + index_y < addrLow);
 		uint8_t operand = fetch_memory_byte(address.add(index_y, false), false);
 		last_operand = address;
 		return operand;
@@ -79,6 +84,7 @@ uint8_t CPU::fetch_operand(ADDRESSING_MODE mode) {
 	case ADDRESSING_INDIRECT_Y:
 	{
 		WideAddress destination = fetch_dereferenced_zero_page_pointer(INDEX_NONE);
+		lastInstructionCrossedPageBoundary = ((destination & 0xFF00) + index_y) > (destination & 0xFF00);
 		destination = destination.add(index_y, false);
 		uint8_t operand = fetch_memory_byte(destination);
 		last_operand = operand;

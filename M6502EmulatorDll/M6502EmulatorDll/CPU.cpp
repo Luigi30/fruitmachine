@@ -11,6 +11,8 @@
 */
 
 //The master processor of instructions.
+bool CPU::lastInstructionCrossedPageBoundary = false;
+
 void CPU::process_instruction() {
 	last_executed_opcode = "";
 	last_operand = 0x00;
@@ -198,7 +200,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 5;
 			last_executed_opcode = "ORA (M),Y $";
-			op_ora(fetch_operand_address(ADDRESSING_INDIRECT_Y));
+			op_ora(fetch_operand_address(ADDRESSING_INDIRECT_Y), true);
 			break;
 		}
 
@@ -230,7 +232,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "ORA M,Y $";
-			op_ora(fetch_operand_address(ADDRESSING_ABSOLUTE_Y));
+			op_ora(fetch_operand_address(ADDRESSING_ABSOLUTE_Y), true);
 			break;
 		}
 
@@ -238,7 +240,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "ORA M,X $";
-			op_ora(fetch_operand_address(ADDRESSING_ABSOLUTE_X));
+			op_ora(fetch_operand_address(ADDRESSING_ABSOLUTE_X), true);
 			break;
 		}
 
@@ -350,7 +352,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 5;
 			last_executed_opcode = "AND (M),Y $";
-			op_and(fetch_operand_address(ADDRESSING_INDIRECT_Y));
+			op_and(fetch_operand_address(ADDRESSING_INDIRECT_Y), true);
 			break;
 		}
 
@@ -382,7 +384,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "AND M,Y $";
-			op_and(fetch_operand_address(ADDRESSING_ABSOLUTE_Y));
+			op_and(fetch_operand_address(ADDRESSING_ABSOLUTE_Y), true);
 			break;
 		}
 
@@ -390,7 +392,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "AND M,X $";
-			op_and(fetch_operand_address(ADDRESSING_ABSOLUTE_X));
+			op_and(fetch_operand_address(ADDRESSING_ABSOLUTE_X), true);
 			break;
 		}
 		
@@ -494,7 +496,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 5;
 			last_executed_opcode = "EOR (ZP),Y $";
-			op_eor(fetch_operand_address(ADDRESSING_INDIRECT_Y));
+			op_eor(fetch_operand_address(ADDRESSING_INDIRECT_Y), true);
 			break;
 		}
 
@@ -526,7 +528,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "EOR M,Y $";
-			op_eor(fetch_operand_address(ADDRESSING_ABSOLUTE_Y));
+			op_eor(fetch_operand_address(ADDRESSING_ABSOLUTE_Y), true);
 			break;
 		}
 
@@ -534,7 +536,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "EOR M,X $";
-			op_eor(fetch_operand_address(ADDRESSING_ABSOLUTE_X));
+			op_eor(fetch_operand_address(ADDRESSING_ABSOLUTE_X), true);
 			break;
 		}
 
@@ -640,7 +642,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 5;
 			last_executed_opcode = "ADC (ZP),Y $";
-			op_adc(fetch_operand_address(ADDRESSING_INDIRECT_Y));
+			op_adc(fetch_operand_address(ADDRESSING_INDIRECT_Y), true);
 			break;
 		}
 
@@ -680,7 +682,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "ADC M,Y $";
-			op_adc(fetch_operand_address(ADDRESSING_ABSOLUTE_Y));
+			op_adc(fetch_operand_address(ADDRESSING_ABSOLUTE_Y), true);
 			break;
 		}
 
@@ -688,7 +690,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "ADC M,X $";
-			op_adc(fetch_operand_address(ADDRESSING_ABSOLUTE_X));
+			op_adc(fetch_operand_address(ADDRESSING_ABSOLUTE_X), true);
 			break;
 		}
 
@@ -944,7 +946,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 5;
 			last_executed_opcode = "LDA (ZP),Y $";
-			op_lda(fetch_operand_address(ADDRESSING_INDIRECT_Y));
+			op_lda(fetch_operand_address(ADDRESSING_INDIRECT_Y), true);
 			break;
 		}
 
@@ -984,7 +986,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "LDA M,Y $";
-			op_lda(fetch_operand_address(ADDRESSING_ABSOLUTE_Y));
+			op_lda(fetch_operand_address(ADDRESSING_ABSOLUTE_Y), true);
 			break;
 		}
 
@@ -1000,7 +1002,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "LDY M,X $";
-			op_ldy(fetch_operand_address(ADDRESSING_ABSOLUTE_X));
+			op_ldy(fetch_operand_address(ADDRESSING_ABSOLUTE_X), true);
 			break;
 		}
 
@@ -1008,7 +1010,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "LDA M,X $";
-			op_lda(fetch_operand_address(ADDRESSING_ABSOLUTE_X));
+			op_lda(fetch_operand_address(ADDRESSING_ABSOLUTE_X), true);
 			break;
 		}
 
@@ -1016,7 +1018,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "LDX M,Y $";
-			op_ldx(fetch_operand_address(ADDRESSING_ABSOLUTE_Y));
+			op_ldx(fetch_operand_address(ADDRESSING_ABSOLUTE_Y), true);
 			break;
 		}
 
@@ -1120,7 +1122,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 5;
 			last_executed_opcode = "CMP (ZP),Y";
-			op_cmp(fetch_operand_address(ADDRESSING_INDIRECT_Y));
+			op_cmp(fetch_operand_address(ADDRESSING_INDIRECT_Y), true);
 			break;
 		}
 
@@ -1152,7 +1154,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "CMP M,Y $";
-			op_cmp(fetch_operand_address(ADDRESSING_ABSOLUTE_Y));
+			op_cmp(fetch_operand_address(ADDRESSING_ABSOLUTE_Y), true);
 			break;
 		}
 
@@ -1160,7 +1162,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "CMP M,X $";
-			op_cmp(fetch_operand_address(ADDRESSING_ABSOLUTE_X));
+			op_cmp(fetch_operand_address(ADDRESSING_ABSOLUTE_X), true);
 			break;
 		}
 
@@ -1271,7 +1273,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 5;
 			last_executed_opcode = "SBC (ZP),Y $";
-			op_sbc(fetch_operand_address(ADDRESSING_INDIRECT_Y));
+			op_sbc(fetch_operand_address(ADDRESSING_INDIRECT_Y), true);
 			break;
 		}
 
@@ -1303,7 +1305,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "SBC M,Y $";
-			op_sbc(fetch_operand_address(ADDRESSING_ABSOLUTE_Y));
+			op_sbc(fetch_operand_address(ADDRESSING_ABSOLUTE_Y), true);
 			break;
 		}
 
@@ -1311,7 +1313,7 @@ void CPU::execute_opcode(uint8_t opcode)
 		{
 			cycles += 4;
 			last_executed_opcode = "SBC M,X $";
-			op_sbc(fetch_operand_address(ADDRESSING_ABSOLUTE_X));
+			op_sbc(fetch_operand_address(ADDRESSING_ABSOLUTE_X), true);
 			break;
 		}
 

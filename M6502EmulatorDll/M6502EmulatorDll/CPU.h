@@ -38,10 +38,13 @@ public:
 	enum ADDRESSING_MODE { ADDRESSING_IMMEDIATE, ADDRESSING_ABSOLUTE, ADDRESSING_ABSOLUTE_X, ADDRESSING_ABSOLUTE_Y, ADDRESSING_ZEROPAGE, ADDRESSING_ZEROPAGE_X, ADDRESSING_ZEROPAGE_Y, ADDRESSING_INDIRECT, ADDRESSING_INDIRECT_X, ADDRESSING_INDIRECT_Y };
 	enum INDEX_MODE { INDEX_NONE = 0x01, INDEX_X = 0x02, INDEX_Y = 0x03 };
 
+	static bool lastInstructionCrossedPageBoundary;
+
 	bool frameInstructionsComplete();
 	void resetCycleCounter();
 
 	void reset_processor() {
+		lastInstructionCrossedPageBoundary = false;
 		FLAG_SIGN = false;
 		FLAG_OVERFLOW = false;
 		FLAG_BREAKPOINT = false;
@@ -117,13 +120,13 @@ public:
 	void print_status(uint8_t opcode);
 
 	/* Opcodes */
-	void CPU::op_adc(WideAddress address);
+	void CPU::op_adc(WideAddress address, bool crossedPageBoundary = false);
 
-	void CPU::op_adc(uint8_t immediate);
+	void CPU::op_adc(uint8_t immediate, bool crossedPageBoundary = false);
 
-	void CPU::op_and(WideAddress address);
+	void CPU::op_and(WideAddress address, bool crossedPageBoundary = false);
 
-	void CPU::op_and(uint8_t immediate);
+	void CPU::op_and(uint8_t immediate, bool crossedPageBoundary = false);
 
 	void CPU::op_asl(WideAddress address);
 
@@ -157,9 +160,9 @@ public:
 
 	void CPU::op_clv();
 
-	void CPU::op_cmp(uint8_t immediate);
+	void CPU::op_cmp(uint8_t immediate, bool crossedPageBoundary = false);
 
-	void CPU::op_cmp(WideAddress address);
+	void CPU::op_cmp(WideAddress address, bool crossedPageBoundary = false);
 
 	void CPU::op_cpx(uint8_t immediate);
 
@@ -175,9 +178,9 @@ public:
 
 	void CPU::op_dey();
 
-	void CPU::op_eor(uint8_t immediate);
+	void CPU::op_eor(uint8_t immediate, bool crossedPageBoundary = false);
 
-	void CPU::op_eor(WideAddress address);
+	void CPU::op_eor(WideAddress address, bool crossedPageBoundary = false);
 
 	void CPU::op_inc(WideAddress address);
 
@@ -189,17 +192,17 @@ public:
 
 	void CPU::op_jsr(WideAddress address);
 
-	void CPU::op_lda(uint8_t immediate);
+	void CPU::op_lda(uint8_t immediate, bool crossedPageBoundary = false);
 
-	void CPU::op_lda(WideAddress address);
+	void CPU::op_lda(WideAddress address, bool crossedPageBoundary = false);
 
-	void CPU::op_ldx(uint8_t immediate);
+	void CPU::op_ldx(uint8_t immediate, bool crossedPageBoundary = false);
 
-	void CPU::op_ldx(WideAddress address);
+	void CPU::op_ldx(WideAddress address, bool crossedPageBoundary = false);
 
-	void CPU::op_ldy(uint8_t immediate);
+	void CPU::op_ldy(uint8_t immediate, bool crossedPageBoundary = false);
 
-	void CPU::op_ldy(WideAddress address);
+	void CPU::op_ldy(WideAddress address, bool crossedPageBoundary = false);
 
 	void CPU::op_lsr();
 
@@ -207,9 +210,9 @@ public:
 
 	void CPU::op_nop();
 
-	void CPU::op_ora(uint8_t immediate);
+	void CPU::op_ora(uint8_t immediate, bool crossedPageBoundary = false);
 
-	void CPU::op_ora(WideAddress address);
+	void CPU::op_ora(WideAddress address, bool crossedPageBoundary = false);
 
 	void CPU::op_pha();
 
@@ -231,9 +234,9 @@ public:
 
 	void CPU::op_rts();
 
-	void CPU::op_sbc(uint8_t immediate);
+	void CPU::op_sbc(uint8_t immediate, bool crossedPageBoundary = false);
 
-	void CPU::op_sbc(WideAddress address);
+	void CPU::op_sbc(WideAddress address, bool crossedPageBoundary = false);
 
 	void CPU::op_sec();
 
