@@ -16,11 +16,13 @@ namespace _6502EmulatorFrontend
         {
             public readonly string MonitorPath;
             public readonly string BasicPath;
+            public readonly string CharacterPath;
 
-            public RomPathEventArgs(string monitorPath, string basicPath)
+            public RomPathEventArgs(string monitorPath, string basicPath, string characterPath)
             {
                 MonitorPath = monitorPath;
                 BasicPath = basicPath;
+                CharacterPath = characterPath;
             }
         }
 
@@ -28,6 +30,7 @@ namespace _6502EmulatorFrontend
         {
             monitorRomPath = e.MonitorPath;
             basicRomPath = e.BasicPath;
+            characterRomPath = e.CharacterPath;
         }
 
         private void OnTextComposition(object sender, TextCompositionEventArgs e)

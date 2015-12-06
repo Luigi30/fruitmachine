@@ -11,6 +11,7 @@ namespace _6502EmulatorFrontend
     {
         private string _monitorRomPath;
         private string _basicRomPath;
+        private string _characterRomPath;
 
         public string MonitorRomPath
         {
@@ -34,6 +35,19 @@ namespace _6502EmulatorFrontend
                 {
                     _basicRomPath = value;
                     OnPropertyChanged("BasicRomPath");
+                }
+            }
+        }
+
+        public string CharacterRomPath
+        {
+            get { return _characterRomPath; }
+            set
+            {
+                if (value != _characterRomPath)
+                {
+                    _characterRomPath = value;
+                    OnPropertyChanged("CharacterRomPath");
                 }
             }
         }

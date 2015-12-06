@@ -28,10 +28,11 @@ namespace _6502EmulatorFrontend
     {
         Thread M6502WorkerThread;
         MainWindowViewModel vm = new MainWindowViewModel();
-        byte[] videoRom = File.ReadAllBytes("C:/apple/apple1.vid");
         string monitorRomPath;
         string basicRomPath;
+        string characterRomPath;
         SettingsWindow settingsWindow;
+        byte[] videoRom;
 
         public MainWindow()
         {
@@ -58,13 +59,9 @@ namespace _6502EmulatorFrontend
             vm.Processor.ExecutionStopped += new M6502.ExecutionStoppedEventHandler(onExecutionStopped);
             TextCompositionManager.AddTextInputHandler(this, new TextCompositionEventHandler(OnTextComposition));
 
-            //Set up settings window
-            settingsWindow = new SettingsWindow();
-            settingsWindow.RomPathsSaved += new SettingsWindow.RomPathsSavedEventHandler(OnRomPathsSaved);
-            settingsWindow.swvm.BasicRomPath = @"C:\apple\apple1basic.bin";
-            settingsWindow.swvm.MonitorRomPath = @"C:\apple\apple1.rom";
             basicRomPath = @"C:\apple\apple1basic.bin";
             monitorRomPath = @"C:\apple\apple1.rom";
+            characterRomPath = @"C:\apple\apple1.vid";
 
             //Set up window
             InitializeComponent();
@@ -76,6 +73,7 @@ namespace _6502EmulatorFrontend
         {
             Interop.loadBinary(monitorRomPath, 0xFF00);
             Interop.loadBinary(basicRomPath, 0xE000);
+            videoRom = File.ReadAllBytes(characterRomPath);
             decodeGraphics();
 
             Interop.resetProcessor();
@@ -195,7 +193,12 @@ namespace _6502EmulatorFrontend
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            settingsWindow.ShowDialog();
+            settingsWindow = new SettingsWindow();
+            settingsWindow.RomPathsSaved += new SettingsWindow.RomPathsSavedEventHandler(OnRomPathsSaved);
+            settingsWindow.swvm.BasicRomPath = basicRomPath;
+            settingsWindow.swvm.MonitorRomPath = monitorRomPath;
+            settingsWindow.swvm.CharacterRomPath = characterRomPath;
+            settingsWindow.Show();
         }
     }
 }

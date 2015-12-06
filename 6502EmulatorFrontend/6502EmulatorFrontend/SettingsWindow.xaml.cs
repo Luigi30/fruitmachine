@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,7 +34,53 @@ namespace _6502EmulatorFrontend
 
         private void btnSave_Click(object sender, RoutedEventArgs e)
         {
-            
+            RomPathsSaved(this, new MainWindow.RomPathEventArgs(swvm.MonitorRomPath, swvm.BasicRomPath, swvm.CharacterRomPath));
+            this.Close();
+        }
+
+        private void btnMonitorRom_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            ofd.Filter = "apple1.rom|apple1.rom|All Files (*.*)|*.*";
+            ofd.FilterIndex = 1;
+
+            bool? userClickedOK = ofd.ShowDialog();
+
+            if (userClickedOK == true)
+            {
+                swvm.MonitorRomPath = ofd.FileName;
+                tbMonitorRomPath.Text = ofd.FileName;
+            }
+        }
+
+        private void btnBasicRom_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            ofd.Filter = "apple1basic.bin|apple1basic.bin|All Files (*.*)|*.*";
+            ofd.FilterIndex = 1;
+
+            bool? userClickedOK = ofd.ShowDialog();
+
+            if (userClickedOK == true)
+            {
+                swvm.BasicRomPath = ofd.FileName;
+                tbBasicRomPath.Text = ofd.FileName;
+            }
+        }
+
+        private void btnCharacterRom_Click(object sender, RoutedEventArgs e)
+        {
+            var ofd = new OpenFileDialog();
+            ofd.Filter = "apple1.vid|apple1.vid|All Files (*.*)|*.*";
+            ofd.FilterIndex = 1;
+
+            bool? userClickedOK = ofd.ShowDialog();
+
+            if (userClickedOK == true)
+            {
+                swvm.CharacterRomPath = ofd.FileName;
+                tbCharacterRomPath.Text = ofd.FileName;
+            }
         }
     }
 }
