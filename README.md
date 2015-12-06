@@ -14,7 +14,6 @@ Known issues:
 * The blinking cursor will hang around if you hit carriage return while it's being displayed
 * Clicking Break and then Run will crash the emulator because I don't know how C# threading works
 * The display will sometimes lose input focus, click away from the window and back in to fix that
-* The cycle counts aren't completely accurate (a cycle isn't added for zero-page operations that wrap)
 * Many more
 
 The ROM paths are hardcoded for the moment so the emulator expects these files to exist:
